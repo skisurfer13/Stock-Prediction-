@@ -1,3 +1,10 @@
+import subprocess
+
+# Install required modules
+subprocess.run(["pip", "install", "yfinance"])
+subprocess.run(["pip", "install", "fbprophet"])
+subprocess.run(["pip", "install", "plotly"])
+
 import streamlit as st
 from datetime import date
 import yfinance as yf
