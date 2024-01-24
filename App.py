@@ -1,15 +1,11 @@
 import streamlit as st
 from datetime import date
-
 import yfinance as yf
 from fbprophet import Prophet
 from fbprophet.plot import plot_plotly
 from plotly import graph_objs as go
-
 from PIL import Image
 import pandas as pd
-
-
 
 image = Image.open('stock.jpeg')
 
@@ -21,22 +17,20 @@ This app shows the closing financial stock price values for S and P 500 companie
 - These are 500 of the largest companies listed on stock exchanges in the US.
 - Dataset resource: Yahoo Finance
 - Added feature: Time series forecasting with fbprophet that can predict the stock price values over 15 years.
-- Note: User inputs for the company to be analysed are taken from the sidebar. It is located at the top left of the page (arrow symbol). Inputs for other features of data analysis can also be provided from the sidebar itself. 
+- Note: User inputs for the company to be analyzed are taken from the sidebar. It is located at the top left of the page (arrow symbol). Inputs for other features of data analysis can also be provided from the sidebar itself. 
 ''')
 st.write('---')
 
 @st.cache
 def load_data():
     components = pd.read_html(
-        "https://en.wikipedia.org/wiki/List_of_S" "%26P_500_companies"
+        "https://en.wikipedia.org/wiki/List_of_S" "%26_P_500_companies"
     )[0]
     return components.drop("SEC filings", axis=1).set_index("Symbol")
-
 
 @st.cache(allow_output_mutation=True)
 def load_quotes(asset):
     return yf.download(asset)
-
 
 def main():
     components = load_data()
@@ -62,7 +56,6 @@ def main():
     format_func=label,
     )
 
-    
     title.title(components.loc[asset].Security)
     if st.sidebar.checkbox("View company info", True):
         st.table(components.loc[asset])
@@ -99,7 +92,6 @@ def main():
     st.subheader("Stock Chart")
     st.line_chart(data2)
 
-    
     st.subheader("Company Statistics")
     st.table(data2.describe())
 
@@ -107,19 +99,14 @@ def main():
         st.subheader(f"{asset} historical data")
         st.write(data2)
 
-    
-    
-
-
 main()
 
-#part2
+# Part 2
 def pre_dict():
     st.header('Stock prediction')
 
     START = "2010-01-01"
     TODAY = date.today().strftime("%Y-%m-%d")
-
 
     stocks = ('AAPL', 'GOOG', 'MSFT', 'GME')
     selected_stock = st.selectbox('Select company for prediction', stocks)
@@ -127,33 +114,26 @@ def pre_dict():
     n_years = st.slider('Years of prediction:', 1, 15)
     period = n_years * 365
 
-
     @st.cache
     def load_data(ticker):
         data = yf.download(ticker, START, TODAY)
         data.reset_index(inplace=True)
         return data
 
-	
-    #data_load_state = st.text('Loading data...')
     data = load_data(selected_stock)
-    #data_load_state.text('Loading data... done!')
 
     st.subheader('Raw data')
     st.write(data.tail())
 
     # Plot raw data
-    def runpls():
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(x=data['Date'], y=data['Open'], name = "stock_open"))
-        fig.add_trace(go.Scatter(x=data['Date'], y=data['Close'], name = "stock_close"))
-        fig.layout.update(title_text='Time Series data with Rangeslider', xaxis_rangeslider_visible=True)
-        st.plotly_chart(fig)
-	
-    runpls()
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=data['Date'], y=data['Open'], name="stock_open"))
+    fig.add_trace(go.Scatter(x=data['Date'], y=data['Close'], name="stock_close"))
+    fig.layout.update(title_text='Time Series data with Rangeslider', xaxis_rangeslider_visible=True)
+    st.plotly_chart(fig)
 
     # Predict forecast with Prophet.
-    df_train = data[['Date','Close']]
+    df_train = data[['Date', 'Close']]
     df_train = df_train.rename(columns={"Date": "ds", "Close": "y"})
 
     m = Prophet()
@@ -174,8 +154,4 @@ def pre_dict():
     st.write(fig2)
 
 if st.button('Stock Prediction'): 
-   if st.button('Stop Prediction'):
-      st.title("Prediction Stopped")
-   else:
-       pre_dict()
-     
+   pre_dict()
