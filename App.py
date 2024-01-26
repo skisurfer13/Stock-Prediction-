@@ -2,14 +2,14 @@ import subprocess
 
 # Install required modules
 subprocess.run(["pip", "install", "yfinance"])
-subprocess.run(["pip", "install", "fbprophet"])
+subprocess.run(["pip", "install", "prophet"])
 subprocess.run(["pip", "install", "plotly"])
 
 import streamlit as st
 from datetime import date
 import yfinance as yf
-from fbprophet import Prophet
-from fbprophet.plot import plot_plotly
+from prophet import Prophet
+from prophet.plot import plot_plotly
 from plotly import graph_objs as go
 from PIL import Image
 import pandas as pd
@@ -28,29 +28,32 @@ This app shows the closing financial stock price values for S and P 500 companie
 ''')
 st.write('---')
 
-@st.cache
+
+@st.cache_data
 def load_data():
     components = pd.read_html(
-        "https://en.wikipedia.org/wiki/List_of_S" "%26_P_500_companies"
+        "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
     )[0]
-    return components.drop("SEC filings", axis=1).set_index("Symbol")
+    return components.set_index("Symbol")
 
-@st.cache(allow_output_mutation=True)
+
+@st.cache_data
 def load_quotes(asset):
     return yf.download(asset)
 
+
 def main():
     components = load_data()
-    
+
     st.sidebar.title("Options")
 
     if st.sidebar.checkbox("View companies list"):
         st.dataframe(
             components[["Security", "GICS Sector", "Date first added", "Founded"]]
         )
-        
+
     title = st.empty()
-        
+
     def label(symbol):
         a = components.loc[symbol]
         return symbol + " - " + a.Security
@@ -58,9 +61,9 @@ def main():
     st.sidebar.subheader("Select company")
     asset = st.sidebar.selectbox(
         "Click below to select a new company",
-    components.index.sort_values(),
-    index=3,
-    format_func=label,
+        components.index.sort_values(),
+        index=3,
+        format_func=label,
     )
 
     title.title(components.loc[asset].Security)
@@ -106,7 +109,9 @@ def main():
         st.subheader(f"{asset} historical data")
         st.write(data2)
 
+
 main()
+
 
 # Part 2
 def pre_dict():
@@ -121,7 +126,7 @@ def pre_dict():
     n_years = st.slider('Years of prediction:', 1, 15)
     period = n_years * 365
 
-    @st.cache
+    @st.cache_data
     def load_data(ticker):
         data = yf.download(ticker, START, TODAY)
         data.reset_index(inplace=True)
@@ -151,7 +156,7 @@ def pre_dict():
     # Show and plot forecast
     st.subheader('Forecast data')
     st.write(forecast.tail())
-    
+
     st.write(f'Forecast plot for {n_years} years')
     fig1 = plot_plotly(m, forecast)
     st.plotly_chart(fig1)
@@ -160,5 +165,6 @@ def pre_dict():
     fig2 = m.plot_components(forecast)
     st.write(fig2)
 
-if st.button('Stock Prediction'): 
-   pre_dict()
+
+#if st.button('Stock Prediction'):
+pre_dict()
